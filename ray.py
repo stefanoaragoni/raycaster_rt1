@@ -1,17 +1,18 @@
 from lib import *
+from sphere import *
 
 class Raytracer(object):
 
     def __init__(self, width, height):
         self.width = width
         self.height = height
-        self.clear_color = color(0,0,0)
+        self.background_color = color(0,0,0)
         self.current_color = color(255,255,255)
         self.clear()
 
     def clear(self):
         self.framebuffer = [
-            [ self.clear_color for y in range(self.height)]
+            [ self.background_color for y in range(self.height)]
             for x in range(self.width) 
         ]
 
@@ -72,4 +73,10 @@ class Raytracer(object):
                 self.point(x,y,c)
 
     def cast_ray(self, origin, direction):
-        return color(255,0,0)
+        s = Sphere(V3(-3,0,-16), 2)
+        intersection = s.ray_intersect(origin, direction)
+
+        if intersection:
+            return color(255,0,0)
+        else:
+            return color(0,0,0)
