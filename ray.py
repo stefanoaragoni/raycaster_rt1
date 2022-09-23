@@ -80,6 +80,6 @@ class Raytracer(object):
             intersection = sphere.ray_intersect(origin, direction)
 
             if intersection:
-                tempColor = color(255,0,0)
+                tempColor = sphere.color
         
         return tempColor
