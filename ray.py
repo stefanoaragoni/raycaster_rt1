@@ -8,6 +8,7 @@ class Raytracer(object):
         self.height = height
         self.background_color = color(0,0,0)
         self.current_color = color(255,255,255)
+        self.scene = []
         self.clear()
 
     def clear(self):
@@ -73,10 +74,12 @@ class Raytracer(object):
                 self.point(x,y,c)
 
     def cast_ray(self, origin, direction):
-        s = Sphere(V3(-3,0,-16), 2)
-        intersection = s.ray_intersect(origin, direction)
+        tempColor = color(0,0,0)
 
-        if intersection:
-            return color(255,0,0)
-        else:
-            return color(0,0,0)
+        for sphere in self.scene:
+            intersection = sphere.ray_intersect(origin, direction)
+
+            if intersection:
+                tempColor = color(255,0,0)
+        
+        return tempColor
