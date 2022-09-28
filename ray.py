@@ -1,5 +1,7 @@
 from lib import *
 from sphere import *
+from material import *
+from light import *
 
 class Raytracer(object):
 
@@ -9,6 +11,7 @@ class Raytracer(object):
         self.background_color = color(0,0,0)
         self.current_color = color(255,255,255)
         self.scene = []
+        self.light = Light(V3(0,0,0), 1)
         self.clear()
 
     def clear(self):
@@ -74,12 +77,35 @@ class Raytracer(object):
                 self.point(x,y,c)
 
     def cast_ray(self, origin, direction):
-        tempColor = color(0,0,0)
+        material, intersect = self.scene_intersect(origin, direction)
 
-        for sphere in self.scene:
-            intersection = sphere.ray_intersect(origin, direction)
+        if material is None:
+            return self.background_color
 
-            if intersection:
-                tempColor = sphere.color
-        
-        return tempColor
+        light_dir = norm(sub(self.light.position, intersect.point))
+        light_intensity = max(0, dot(light_dir, intersect.normal))
+
+        diffuse = color(
+            int(material.diffuse[2] * light_intensity),
+            int(material.diffuse[1] * light_intensity),
+            int(material.diffuse[0] * light_intensity)
+        )
+        return diffuse
+
+
+
+    def scene_intersect(self, origin, direction):
+        zbuffer = 9999
+        material = None
+        intersect = None
+
+        for o in self.scene:
+            object_intersect = o.ray_intersect(origin, direction)
+
+            if object_intersect:
+                if object_intersect.distance < zbuffer:
+                    zbuffer = object_intersect.distance
+                    material = o.material
+                    intersect = object_intersect
+            
+        return material, intersect

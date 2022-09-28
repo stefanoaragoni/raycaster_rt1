@@ -1,10 +1,11 @@
 from lib import *
+from intersect import *
 
 class Sphere(object):
-    def __init__(self, center, radius, color):
+    def __init__(self, center, radius, material):
         self.center = center
         self.radius = radius
-        self.color = color
+        self.material = material
 
     def ray_intersect(self, origin, direction):
         L = sub(self.center, origin)
@@ -14,7 +15,7 @@ class Sphere(object):
         d2 = l**2 - tca**2
 
         if d2 > self.radius**2:
-            return False
+            return None
 
         thc = (self.radius**2 - d2)**0.5
         t0 = tca - thc
@@ -23,7 +24,10 @@ class Sphere(object):
         if t0 < 0:
             t0 = t1
         if t0 < 0:
-            return False
+            return None
 
-        return True
+        impact = sum(origin, mul(direction, t0))
+        normal = norm(sub(impact, self.center))
+
+        return Intersect(distance=t0, point=impact, normal=normal)
     
