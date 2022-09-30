@@ -1,3 +1,4 @@
+from importlib.util import spec_from_file_location
 from lib import *
 from sphere import *
 from material import *
@@ -11,7 +12,7 @@ class Raytracer(object):
         self.background_color = color(0,0,0)
         self.current_color = color(255,255,255)
         self.scene = []
-        self.light = Light(V3(0,0,0), 1)
+        self.light = Light(V3(0,0,0), 1, color(255,255,255))
         self.clear()
 
     def clear(self):
@@ -83,15 +84,30 @@ class Raytracer(object):
             return self.background_color
 
         light_dir = norm(sub(self.light.position, intersect.point))
-        light_intensity = max(0, dot(light_dir, intersect.normal))
+
+        #diffuse
+        diffuse_intensity = dot(light_dir, intersect.normal)
+
+        if diffuse_intensity < 0:
+            return self.background_color
+
+        #specular
+        light_reflection = reflect(light_dir, intersect.normal)
+        reflection_intensity = max(0, dot(light_reflection, direction))
+        specular_intensity = reflection_intensity ** material.spec
+        specular = color(
+            self.light.c[0] * specular_intensity * material.albedo[1],
+            self.light.c[1] * specular_intensity * material.albedo[1],
+            self.light.c[2] * specular_intensity * material.albedo[1])
+
 
         diffuse = color(
-            int(material.diffuse[2] * light_intensity),
-            int(material.diffuse[1] * light_intensity),
-            int(material.diffuse[0] * light_intensity)
+            int((material.diffuse[2] * diffuse_intensity * material.albedo[0]) + specular[2]),
+            int((material.diffuse[1] * diffuse_intensity * material.albedo[0]) + specular[1]),
+            int((material.diffuse[0] * diffuse_intensity * material.albedo[0]) + specular[0])
         )
+        
         return diffuse
-
 
 
     def scene_intersect(self, origin, direction):
