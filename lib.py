@@ -21,10 +21,11 @@ def dword(d):
   return struct.pack('=l', d)
 
 def color(r, g, b):
-  if r <= 1 and g <= 1 and b <= 1:
-    return bytes([int(b * 255), int(g * 255), int(r * 255)])
-  else:
-    return bytes([b, g, r])
+  r = int(max(0, min(r, 255)))
+  g = int(max(0, min(g, 255)))
+  b = int(max(0, min(b, 255)))
+
+  return bytes([b, g, r])
 
 # ========== VECTOR =========
 V3 = namedtuple('P3', ['x', 'y', 'z'])
@@ -78,3 +79,6 @@ def barycentric(x1, y1, x2, y2, x3, y3, x4, y4):
     return -1, -1, -1
 
   return (c.x / c.z, c.y / c.z, 1 - ((c.x + c.y) / c.z))
+
+def reflect(I, N):
+  return norm(sub(I, mul(N, 2 * dot(I, N))))
