@@ -4,6 +4,9 @@ from sphere import *
 from material import *
 from light import *
 
+MAX_RECURSION_DEPTH = 3
+
+
 class Raytracer(object):
 
     def __init__(self, width, height):
@@ -85,6 +88,16 @@ class Raytracer(object):
 
         light_dir = norm(sub(self.light.position, intersect.point))
 
+        #shadow
+        shadow_bias = 1.1
+        shadow_origin = sum(intersect.point, mul(intersect.normal, shadow_bias))
+        shadow_material, shadow_intersect = self.scene_intersect(shadow_origin, light_dir)
+
+
+        shadow_intensity = 1
+        if shadow_material:
+            shadow_intensity = 0.3
+
         #diffuse
         diffuse_intensity = dot(light_dir, intersect.normal)
 
@@ -102,9 +115,9 @@ class Raytracer(object):
 
 
         diffuse = color(
-            int((material.diffuse[2] * diffuse_intensity * material.albedo[0]) + specular[2]),
-            int((material.diffuse[1] * diffuse_intensity * material.albedo[0]) + specular[1]),
-            int((material.diffuse[0] * diffuse_intensity * material.albedo[0]) + specular[0])
+            int(((material.diffuse[2] * diffuse_intensity * material.albedo[0] * shadow_intensity) + specular[2])),
+            int(((material.diffuse[1] * diffuse_intensity * material.albedo[0] * shadow_intensity) + specular[1])),
+            int(((material.diffuse[0] * diffuse_intensity * material.albedo[0] * shadow_intensity) + specular[0]))
         )
         
         return diffuse
