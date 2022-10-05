@@ -12,7 +12,7 @@ class Raytracer(object):
     def __init__(self, width, height):
         self.width = width
         self.height = height
-        self.background_color = color(0,0,55)
+        self.background_color = color(0,0,200)
         self.current_color = color(0,0,0)
         self.scene = []
         self.light = Light(V3(0,0,0), 1, color(255,255,255))
