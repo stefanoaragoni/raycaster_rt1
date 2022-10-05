@@ -123,7 +123,7 @@ class Raytracer(object):
             reverse_direction = mul(direction, -1)
             reflect_direction = reflect(reverse_direction, intersect.normal)
             reflection_bias = -0.5 if dot(reflect_direction, intersect.normal) < 0 else 0.5
-            reflect_origin = sum(intersect.point, mul(reflect_direction, reflection_bias))
+            reflect_origin = sum(intersect.point, mul(intersect.normal, reflection_bias))
             reflect_color = self.cast_ray(reflect_origin, reflect_direction, recursion + 1)
         else:
             reflect_color = color(0,0,0)
