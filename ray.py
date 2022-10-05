@@ -12,8 +12,8 @@ class Raytracer(object):
     def __init__(self, width, height):
         self.width = width
         self.height = height
-        self.background_color = color(0,0,0)
-        self.current_color = color(255,255,255)
+        self.background_color = color(0,0,55)
+        self.current_color = color(0,0,0)
         self.scene = []
         self.light = Light(V3(0,0,0), 1, color(255,255,255))
         self.clear()
@@ -80,7 +80,12 @@ class Raytracer(object):
                 c = self.cast_ray(origin, direction)
                 self.point(x,y,c)
 
-    def cast_ray(self, origin, direction):
+    def cast_ray(self, origin, direction, recursion=0):
+
+        if recursion == MAX_RECURSION_DEPTH:
+            return self.background_color
+            
+
         material, intersect = self.scene_intersect(origin, direction)
 
         if material is None:
@@ -113,11 +118,25 @@ class Raytracer(object):
             self.light.c[1] * specular_intensity * material.albedo[1],
             self.light.c[2] * specular_intensity * material.albedo[1])
 
+        # reflection
+        if material.albedo[2] > 0:
+            reverse_direction = mul(direction, -1)
+            reflect_direction = reflect(reverse_direction, intersect.normal)
+            reflection_bias = -0.5 if dot(reflect_direction, intersect.normal) < 0 else 0.5
+            reflect_origin = sum(intersect.point, mul(reflect_direction, reflection_bias))
+            reflect_color = self.cast_ray(reflect_origin, reflect_direction, recursion + 1)
+        else:
+            reflect_color = color(0,0,0)
+
+        reflection = color(
+            reflect_color[0] * material.albedo[2],
+            reflect_color[1] * material.albedo[2],
+            reflect_color[2] * material.albedo[2])
 
         diffuse = color(
-            int(((material.diffuse[2] * diffuse_intensity * material.albedo[0] * shadow_intensity) + specular[2])),
-            int(((material.diffuse[1] * diffuse_intensity * material.albedo[0] * shadow_intensity) + specular[1])),
-            int(((material.diffuse[0] * diffuse_intensity * material.albedo[0] * shadow_intensity) + specular[0]))
+            int(((material.diffuse[2] * diffuse_intensity * material.albedo[0] * shadow_intensity) + specular[2] + reflection[2])),
+            int(((material.diffuse[1] * diffuse_intensity * material.albedo[0] * shadow_intensity) + specular[1] + reflection[1])),
+            int(((material.diffuse[0] * diffuse_intensity * material.albedo[0] * shadow_intensity) + specular[0] + reflection[0]))
         )
         
         return diffuse
