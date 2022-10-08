@@ -12,7 +12,7 @@ class Raytracer(object):
     def __init__(self, width, height):
         self.width = width
         self.height = height
-        self.background_color = color(0,0,200)
+        self.background_color = color(0,0,100)
         self.current_color = color(0,0,0)
         self.scene = []
         self.light = Light(V3(0,0,0), 1, color(255,255,255))
@@ -97,22 +97,15 @@ class Raytracer(object):
         shadow_bias = 1.1
         shadow_origin = sum(intersect.point, mul(intersect.normal, shadow_bias))
         shadow_material, shadow_intersect = self.scene_intersect(shadow_origin, light_dir)
-
-
-        shadow_intensity = 1
-        if shadow_material:
-            shadow_intensity = 0.3
+        shadow_intensity = 0.75 if (shadow_material is not None) else 0
 
         #diffuse
         diffuse_intensity = dot(light_dir, intersect.normal)
 
-        if diffuse_intensity < 0:
-            return self.background_color
-
         #specular
         light_reflection = reflect(light_dir, intersect.normal)
         reflection_intensity = max(0, dot(light_reflection, direction))
-        specular_intensity = reflection_intensity ** material.spec
+        specular_intensity = (reflection_intensity ** material.spec) * self.light.intensity
         specular = color(
             self.light.c[0] * specular_intensity * material.albedo[1],
             self.light.c[1] * specular_intensity * material.albedo[1],
@@ -128,15 +121,28 @@ class Raytracer(object):
         else:
             reflect_color = color(0,0,0)
 
+        # Cálculo de la refracción del material.
+        if (material.albedo[3] > 0):
+            refraction_direction = refract(direction, intersect.normal, material.refractive_index)
+            refraction_bias = -0.5 if dot(refraction_direction, intersect.normal) < 0 else 0.5
+            refraction_origin = sum(intersect.point, mul(intersect.normal, refraction_bias))
+            refract_color = self.cast_ray(refraction_origin, refraction_direction, recursion + 1)
+        else:
+            refract_color = color(0, 0, 0)
+
         reflection = color(
             reflect_color[0] * material.albedo[2],
             reflect_color[1] * material.albedo[2],
             reflect_color[2] * material.albedo[2])
 
+        refraction = color(refract_color[0] * material.albedo[3],
+            refract_color[1] * material.albedo[3],
+            refract_color[2] * material.albedo[3])
+
         diffuse = color(
-            int(((material.diffuse[2] * diffuse_intensity * material.albedo[0] * shadow_intensity) + specular[2] + reflection[2])),
-            int(((material.diffuse[1] * diffuse_intensity * material.albedo[0] * shadow_intensity) + specular[1] + reflection[1])),
-            int(((material.diffuse[0] * diffuse_intensity * material.albedo[0] * shadow_intensity) + specular[0] + reflection[0]))
+            (int(((material.diffuse[2] * diffuse_intensity * material.albedo[0] * (1-shadow_intensity)) + specular[2] + reflection[2] + refraction[2]))),
+            (int(((material.diffuse[1] * diffuse_intensity * material.albedo[0] * (1-shadow_intensity)) + specular[1] + reflection[1] + refraction[1]))),
+            (int(((material.diffuse[0] * diffuse_intensity * material.albedo[0] * (1-shadow_intensity)) + specular[0] + reflection[0] + refraction[0])))
         )
         
         return diffuse
