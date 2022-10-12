@@ -1,5 +1,6 @@
 from plane import Plane
 from sphere import Sphere
+from square import Square
 from ray import *
 from lib import *
 from material import *
@@ -15,14 +16,16 @@ r = Raytracer(500,500)
 
 r.light = Light(V3(-20, 20, 20), 2, color(255, 255, 255))
 r.density = 1
-#r.background_color = color(255, 255, 255)
+r.background_color = color(255, 255, 255)
 
 r.scene = [
     Sphere(V3(0, -1.5, -10), 1.5, ivory),
     Sphere(V3(0, 0, -5), 0.5, glass),
     Sphere(V3(1, 1, -8), 1.7, rubber),
     Sphere(V3(-2, 1, -10), 2, mirror),
-    Plane(V3(0, 2.5, -5), 5, 3, mirror),
+    #Square(V3(0, 0, -7), (7, 7), rubber),
+    Plane(V3(0, 2.5, -5), 5, 3, mirror, V3(0, 1, 0)),
+    Plane(V3(0, -2.5, -5), 5, 3, mirror, V3(0, 1, 0)),
 ]
 
 #r.envmap = Envmap('./envmap.bmp')
