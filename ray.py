@@ -1,4 +1,5 @@
 from importlib.util import spec_from_file_location
+import random
 from lib import *
 from sphere import *
 from material import *
@@ -16,6 +17,9 @@ class Raytracer(object):
         self.current_color = color(0,0,0)
         self.scene = []
         self.light = Light(V3(0,0,0), 1, color(255,255,255))
+        self.envmap = None
+
+        self.density = 1
         self.clear()
 
     def clear(self):
@@ -54,10 +58,10 @@ class Raytracer(object):
         f.write(dword(0))
         f.write(dword(0))
 
-        for y in range(self.height-1, -1, -1):
-            for x in range(self.width):
+        for x in range(self.width):
+            for y in range(self.height):
                 try:
-                    f.write(self.framebuffer[x][y])
+                    f.write(self.framebuffer[y][x])
                 except:
                     f.write(color(0,0,0))
 
@@ -68,28 +72,38 @@ class Raytracer(object):
         ar = self.width/self.height
         tana = tan(fov/2)
         
-        for x in range(self.width):
-            for y in range(self.height):
+        for y in range(self.height):
+            for x in range(self.width):
 
-                i = (2 * (x + 0.5) / self.width - 1) * ar * tana
-                j = (1 - (2 * (y + 0.5) / self.height)) * tana
+                rand = random.uniform(0, 1)
+                if rand < self.density:
+                    i = (2 * (x + 0.5) / self.width - 1) * ar * tana
+                    j = (1 - (2 * (y + 0.5) / self.height)) * tana
 
-                origin = V3(0,0,0)
-                direction = norm(V3(i, j, -1))
+                    info = [x,y]
 
-                c = self.cast_ray(origin, direction)
-                self.point(x,y,c)
+                    origin = V3(0,0,0)
+                    direction = norm(V3(i, j, -1))
 
-    def cast_ray(self, origin, direction, recursion=0):
+                    c = self.cast_ray(origin, direction, info)
+                    self.point(x,y,c)
+
+    def get_background(self, direction, info):
+        if self.envmap:
+            return self.envmap.get_color(direction, info)
+        else:
+            return self.background_color
+
+    def cast_ray(self, origin, direction, info, recursion=0):
 
         if recursion == MAX_RECURSION_DEPTH:
-            return self.background_color
+            return self.get_background(direction, info)
             
 
         material, intersect = self.scene_intersect(origin, direction)
 
         if material is None:
-            return self.background_color
+            return self.get_background(direction, info)
 
         light_dir = norm(sub(self.light.position, intersect.point))
 
@@ -113,11 +127,11 @@ class Raytracer(object):
 
         # reflection
         if material.albedo[2] > 0:
-            reverse_direction = mul(direction, -1)
-            reflect_direction = reflect(reverse_direction, intersect.normal)
+            #reverse_direction = mul(direction, -1)
+            reflect_direction = reflect(direction, intersect.normal)
             reflection_bias = -0.5 if dot(reflect_direction, intersect.normal) < 0 else 0.5
             reflect_origin = sum(intersect.point, mul(intersect.normal, reflection_bias))
-            reflect_color = self.cast_ray(reflect_origin, reflect_direction, recursion + 1)
+            reflect_color = self.cast_ray(reflect_origin, reflect_direction, info, recursion + 1)
         else:
             reflect_color = color(0,0,0)
 
@@ -126,7 +140,7 @@ class Raytracer(object):
             refraction_direction = refract(direction, intersect.normal, material.refractive_index)
             refraction_bias = -0.5 if dot(refraction_direction, intersect.normal) < 0 else 0.5
             refraction_origin = sum(intersect.point, mul(intersect.normal, refraction_bias))
-            refract_color = self.cast_ray(refraction_origin, refraction_direction, recursion + 1)
+            refract_color = self.cast_ray(refraction_origin, refraction_direction, info, recursion + 1)
         else:
             refract_color = color(0, 0, 0)
 
@@ -135,14 +149,15 @@ class Raytracer(object):
             reflect_color[1] * material.albedo[2],
             reflect_color[2] * material.albedo[2])
 
-        refraction = color(refract_color[0] * material.albedo[3],
+        refraction = color(
+            refract_color[0] * material.albedo[3],
             refract_color[1] * material.albedo[3],
             refract_color[2] * material.albedo[3])
 
         diffuse = color(
-            (int(((material.diffuse[2] * diffuse_intensity * material.albedo[0] * (1-shadow_intensity)) + specular[2] + reflection[2] + refraction[2]))),
+            (int(((material.diffuse[2] * diffuse_intensity * material.albedo[0] * (1-shadow_intensity)) + specular[0] + reflection[0] + refraction[0]))),
             (int(((material.diffuse[1] * diffuse_intensity * material.albedo[0] * (1-shadow_intensity)) + specular[1] + reflection[1] + refraction[1]))),
-            (int(((material.diffuse[0] * diffuse_intensity * material.albedo[0] * (1-shadow_intensity)) + specular[0] + reflection[0] + refraction[0])))
+            (int(((material.diffuse[0] * diffuse_intensity * material.albedo[0] * (1-shadow_intensity)) + specular[2] + reflection[2] + refraction[2])))
         )
         
         return diffuse

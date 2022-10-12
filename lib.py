@@ -81,7 +81,7 @@ def barycentric(x1, y1, x2, y2, x3, y3, x4, y4):
   return (c.x / c.z, c.y / c.z, 1 - ((c.x + c.y) / c.z))
 
 def reflect(I, N):
-  return norm(sub(I, mul(N, 2 * dot(I, N))))
+  return sub(I, mul(N, 2 * dot(I, N)))
 
 def refract(I, N, roi):
   eta_i = 1
