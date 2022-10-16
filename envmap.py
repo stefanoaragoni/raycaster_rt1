@@ -1,5 +1,6 @@
 from math import atan2, acos, pi
 import struct
+from lib import norm
 
 class Envmap(object):
     def __init__(self, path):
@@ -22,9 +23,9 @@ class Envmap(object):
                 for x in range(self.width) 
             ]
 
-            for y in range(self.height):
+            for y in reversed(range(self.height)):
                 self.pixels.append([])
-                for x in range(self.width):
+                for x in reversed(range(self.width)):
                     b = ord(image.read(1))
                     g = ord(image.read(1))
                     r = ord(image.read(1))
@@ -34,16 +35,23 @@ class Envmap(object):
                     self.pixels[y][x] = color
 
     def get_color(self, direction, info):
-        x = atan2(direction.z, direction.x) / (2 * pi) + 0.5
-        y = acos(-direction.y) / pi
+        direction = norm(direction)
 
-        x = int(x) * self.width
-        y = int(y) * self.height
+        x = min((atan2(direction.z, direction.x) / (2 * pi) + 0.5)*2, 1)
+        y = min((acos(-direction.y) / pi)*2, 1)
 
-        try:
-            return self.pixels[info[1]][info[0]]
-        except:
-            return bytes([0, 0, 0])
+        x = int(x * self.width)
+        y = int(y * self.height)
+
+        if (x > 0):
+            x -= 1 
+        else: 0
+        
+        if (y > 0):
+            y -= 1 
+        else: y=0
+
+        return self.pixels[y][x]
 
 
 
