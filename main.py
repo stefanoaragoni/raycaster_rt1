@@ -41,17 +41,20 @@ water = Material(diffuse = color(0, 0, 100), albedo = [0, 1, 0.8, 0], spec = 142
 water_reflective = Material(diffuse = color(150, 180, 200), albedo = [0, 0.5, 0.1, 0.8], spec = 125, refractive_index = 1.5)
 
 wood = Material(diffuse = color(100, 50, 0), albedo = [0.9,  0.1, 0, 0], spec = 10)
-
-nether = Material(diffuse = color(63,17,135), albedo = [0.9,  0.1, 0, 0], spec = 10)
-
 leaf = Material(diffuse = color(0,79,0), albedo = [0.9,  0.1, 0, 0], spec = 10)
 leaf2 = Material(diffuse = color(1,63,0), albedo = [0.8,  0.1, 0.1, 0], spec = 10)
 leaf3 = Material(diffuse = color(0, 70, 1), albedo = [0.8,  0.2, 0, 0], spec = 10)
 
 grass = Material(diffuse = color(94,157,52), albedo = [0.9,  0.1, 0, 0], spec = 10)
 
+nether = Material(diffuse = color(63,17,135), albedo = [0.9,  0.1, 0, 0], spec = 10)
+netherBlack = Material(diffuse = color(153,107,225), albedo = [0.9,  0.1, 0, 0], spec = 10)
+nether2 = Material(diffuse = color(120,51,174), albedo = [0.6,  0.3, 0.1, 0], spec = 50)
+
+estrella = Material(diffuse=color(250,250,250), albedo = [0.9, 0.1, 0, 0], spec = 50)
+
 #----------------LUZ, COLOR-----------------#
-r.light = Light(V3(-20, 40, 20), 5, color(255, 255, 255))
+r.light = Light(V3(-20, 40, 20), 3, color(255, 255, 255))
 r.density = 1
 r.background_color = color(255, 255, 255)
 
@@ -60,8 +63,8 @@ r.background_color = color(255, 255, 255)
 obj = Obj('./circle.obj',5,5,apple)
 obj.glLoad((0,0,-5), (0.1,0.1,0.1))
 
-star = Obj('./star.obj',2,2,peach)
-star.glLoad((-1,-1,-5), (1,1,1))
+star = Obj('./star.obj',1,1,estrella)
+star.glLoad((2,-2,-5), (0.5,0.5,0.5))
 
 
 #----------------ENVMAP / FONDO-----------------#
@@ -90,6 +93,26 @@ r.scene = [
     *(Square(V3(-2.1, -0.1, -12), (11,11), leaf3)).planes,
 
     *(Square(V3(-3, 0.8, -12), (12,12), leaf)).planes,
+
+    *(Square(V3(1, -3, -12), (10,10), nether)).planes,
+    *(Square(V3(1, -2.2, -12), (10,10), nether)).planes,
+    *(Square(V3(1, -1.4, -12), (10,10), nether)).planes,
+    *(Square(V3(1, -0.6, -12), (10,10), nether)).planes,
+    *(Square(V3(1, 0.2, -12), (10,10), netherBlack)).planes,
+
+    *(Square(V3(4, -3, -12), (10,10), nether)).planes,
+    *(Square(V3(4, -2.2, -12), (10,10), nether)).planes,
+    *(Square(V3(4, -1.4, -12), (10,10), nether)).planes,
+    *(Square(V3(4, -0.6, -12), (10,10), nether)).planes,
+    *(Square(V3(4, 0.2, -12), (10,10), nether)).planes,
+
+    *(Square(V3(1.75, -3, -12), (10,10), netherBlack)).planes,
+    *(Square(V3(2.5, -3, -12), (10,10), netherBlack)).planes,
+    *(Square(V3(3.25, -3, -12), (10,10), netherBlack)).planes,
+
+    *(Square(V3(1.75, 0.2, -12), (10,10), nether)).planes,
+    *(Square(V3(2.5, 0.2, -12), (10,10), nether)).planes,
+    *(Square(V3(3.25, 0.2, -12), (10,10), nether)).planes,
 
     *obj.draw(),
     *star.draw(),
