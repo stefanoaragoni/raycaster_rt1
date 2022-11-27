@@ -11,7 +11,7 @@ Rúbrica
 - [10 puntos] por implementar refracción en al menos uno de sus materiales
 - [5 puntos] por implementar reflexión en al menos uno de sus materiales
 - [30 puntos] por implementar figuras geométricas distintas a esferas, cubos, rectangulos y planos
-    *se implementaron triangulos.
+   *se implementaron triangulos.
 
 - [5 puntos] por implementar un envmap
 
